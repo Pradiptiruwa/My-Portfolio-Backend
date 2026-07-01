@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -13,6 +14,9 @@ app.use(express.json());
 
 // Routes
 app.use("/api", contactRoutes);
+
+console.log("PORT =", process.env.PORT);
+console.log("URI =", process.env.MONGO_URI);
 
 // MongoDB Connection
 mongoose
