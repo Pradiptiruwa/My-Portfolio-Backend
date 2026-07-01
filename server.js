@@ -1,42 +1,62 @@
-require('dotenv').config();
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
 
 const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
-// Middleware
+/* ---------------- MIDDLEWARE ---------------- */
 app.use(cors());
 app.use(express.json());
 
-// Routes
+/* ---------------- ROUTES ---------------- */
 app.use("/api", contactRoutes);
 
-console.log("PORT =", process.env.PORT);
-console.log("URI =", process.env.MONGO_URI);
-
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected ✅");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-
-// Test Route
 app.get("/", (req, res) => {
   res.send("Portfolio Backend Running 🚀");
 });
 
-// Port
+/* ---------------- DEBUG (Vercel check) ---------------- */
+console.log("PORT =", process.env.PORT);
+console.log("MONGO_URI =", process.env.MONGO_URI);
+
+/* ---------------- DB CONNECTION (SAFE FOR VERCEL) ---------------- */
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDB() {
+  if (cached.conn) {
+    console.log("Using cached MongoDB connection");
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+    console.log("MongoDB Connected ✅");
+    return cached.conn;
+  } catch (err) {
+    console.log("MongoDB Connection Error ❌", err);
+  }
+}
+
+connectDB();
+
+/* ---------------- SERVER START ---------------- */
 const PORT = process.env.PORT || 5000;
 
-// Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
