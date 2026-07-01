@@ -1,10 +1,12 @@
 const Contact = require("../models/Contact");
+
 exports.saveContact = async (req, res) => {
+
   try {
 
-    const Contact = new Contact(req.body);
+    const contact = new Contact(req.body);
 
-    await Contact.save();
+    await contact.save();
 
     res.status(201).json({
       message: "Message Sent Successfully"
@@ -17,4 +19,5 @@ exports.saveContact = async (req, res) => {
     });
 
   }
+
 };
